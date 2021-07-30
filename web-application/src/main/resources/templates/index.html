@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body> 
+	<h1>Gradient Calculator</h1>
+	<h2> Import GPS data</h2>
+	<form method="POST" th:action="@{/upload-csv-file}" enctype="multipart/form-data">
+    <div class="form-group mt-3">
+        <label for="file">Select a file</label>
+        <input type="file" name="file" class="form-control-file" id="file">
+    </div>
+    <button type="submit" class="btn btn-primary">Import data</button>
+	</form>
+</body>
+
+</html>
