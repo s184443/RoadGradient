@@ -2,20 +2,23 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 import json
 import requests
-import math
 import numpy as np
-from bisect import bisect_left
 from scipy import stats
 import haversine as hs
 app = Flask(__name__)
 api = Api(app)
+
+#Replace this with own token from Kortforsyningen at: https://kortforsyningen.dk
 token = 'e9aec1f926aa2482b16acad49cb11e83'
+
+#Makes a list from a specific Index in aa list of lists.
 def Finddata(data, index):
     extracted = []
     for i in data:
         extracted.append(float(i[index]))
     return extracted
 
+#Creates a list of coordinate pairs.
 def Request(lat, long):
     revpairs = []
     for i in range(len(lat)):
@@ -25,6 +28,7 @@ def Request(lat, long):
         revpairs[i] = ','.join(str(e) for e in revpairs[i]) 
     return revpairs
 
+#Calls Kortforsyningen for 50 datapoints and unpacks them.
 def RestCall(token, request):
     request = "https://api.dataforsyningen.dk/RestGeokeys_v2?elevationmodel=dtm&method=geopmulti&geop={0}&georef=EPSG:4326&token={1}".format(request,token)
     print(request)
@@ -44,6 +48,7 @@ def RestCall(token, request):
         orderedData.append(x)
     return orderedData
 
+#Runs a loop calling 50 points at a time until all requested points have been found.
 def FullRequest(revpairs):
     findata = []
     for i in range(50,len(revpairs)+50,50):
@@ -60,32 +65,7 @@ def FullRequest(revpairs):
         list1 += i
     return list1
 
-def take_closest_x(myList,pos, x):
-    if pos == 0:
-        return myList[:x*2]
-    if pos == len(myList):
-        return myList[-x*2:]
-    if pos-x < 0:
-        left = pos-x
-        return myList[:pos+x-left]
-    if pos+x >len(myList):
-        right = pos+x-len(myList)
-        return myList[pos-x-right:]
-    else:
-        return myList[pos-x:pos+x]
-  
-
-def take_closest_index(myList, myNumber):
-    pos = bisect_left(myList, myNumber)
-    return pos
-
-def angle(x1,x2,y1,y2, prev):
-    try:
-        result = math.atan((y2-y1)/(x2-x1))
-    except ZeroDivisionError:
-        result = prev
-    return result
-
+#Find the total distance traveled on a route. 
 def Distance(long,lat):
     distance = []
     currentdist = 0
@@ -97,19 +77,8 @@ def Distance(long,lat):
             distance.append(currentdist) 
     return distance
 
-def FindGradient(alt, dist):
-    gradient = []
-    for i in range(len(alt)):
-        if i == 0:
-            gradient.append(0)
-        else:
-            try:
-                gradient.append((alt[i]-alt[i-1])/((dist[i]-dist[i-1])*1000)*100)
-            except ZeroDivisionError:
-                gradient.append(0)
-
-    return gradient
-
+#Calculates the route gradient using the elevation and the total distance traveled.
+#Hereafter it cleans the data.
 def Gradientclean(alt, dist):
     gradient = []
     threshold = 2
@@ -122,19 +91,20 @@ def Gradientclean(alt, dist):
             except ZeroDivisionError:
                 gradient.append(0)
     z = np.abs(stats.zscore(gradient))
-#    print(z)
+
     outlierIndex = np.where(z>threshold)
     print(outlierIndex)
     for i in outlierIndex[0]:
         gradient[i] = gradient[i-1]
     return gradient
 
+#Handels REST requests.
 def requestHandeling(request):
     datastore = json.dumps(request)
     json_string = json.loads(datastore)
-#    data = json_string["data"]
+
     gps = json_string["gps"]
-#    print(gps)
+
     
     lat = Finddata(gps, 0)
     long = Finddata(gps,1)
@@ -142,7 +112,6 @@ def requestHandeling(request):
     fulldata = FullRequest(revpairs)
     DEMalt = Finddata(fulldata, 2)
     dist = Distance(long,lat)
-    grad = FindGradient(DEMalt, dist)
     gradclean = Gradientclean(DEMalt, dist)
 
     answer = []
@@ -150,7 +119,7 @@ def requestHandeling(request):
         answer.append([lat[i],long[i],DEMalt[i],gradclean[i]])
     
     response = {"gps":answer}
-    jsonresponse = json.dumps(response)
+
     return response
 
 class Gradient(Resource):

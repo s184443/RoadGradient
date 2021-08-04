@@ -1,36 +1,46 @@
-<div class="container py-5">
-    <div class="row">
-        <div class="col-10 mx-auto">
-            <h1>File Upload Status</h1>
-            <!--display error if any-->
-            <div class="alert alert-danger" role="alert" th:if="${!status}">
-                <strong>Error:</strong>
-                <span th:text="${message}"></span>
-            </div>
 
-            <!--display users list-->
-            <table class="table table-striped" th:if="${status}">
-                <thead>
-                <tr>
-                	<th scope="col">number</th>
-                    <!--<th scope="col">time</th>-->
-                    <th scope="col">longitude</th>
-                    <th scope="col">latitude</th>
-                    <th scope="col">altitude</th>
-                    <th scope="col">gradient</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="data, i : ${data}">
-                    <th scope="row" th:text="${i.index + 1}"></th>
-                    <!--<td th:text="${data.time}"></td>-->
-                    <td th:text="${data.longitude}"></td>
-                    <td th:text="${data.latitude}"></td>
-                    <td th:text="${data.altitude}"></td>
-                    <td th:text="${data.gradient}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<!DOCTYPE html>
+<html xmlns="https://www.thymeleafe.org">
+<head>
+<title>Route Visualization</title>
+</head>
+<body>
+
+	<div class="container py-5">
+	    <div class="row">
+	        <div class="col-10 mx-auto">
+	            <h1>File Upload Status</h1>
+	            <!--display error if any-->
+	            <div class="alert alert-danger" role="alert" th:if="${!status}">
+	                <strong>Error:</strong>
+	                <span th:text="${message}"></span>
+	            </div>
+	
+	            <!--display users list-->
+	            <table class="table table-striped" th:if="${status}">
+	                <thead>
+	                <tr>
+	                	<th scope="col">number</th>
+	                    <!--<th scope="col">time</th>-->
+	                    <th scope="col">longitude</th>
+	                    <th scope="col">latitude</th>
+	                    <th scope="col">altitude</th>
+	                    <th scope="col">gradient</th>
+	                </tr>
+	                </thead>
+	                <tbody>
+	                <tr th:each="data, i : ${data}">
+	                    <th scope="row" th:text="${i.index + 1}"></th>
+	                    <!--<td th:text="${data.time}"></td>-->
+	                    <td th:text="${data.longitude}"></td>
+	                    <td th:text="${data.latitude}"></td>
+	                    <td th:text="${data.altitude}"></td>
+	                    <td th:text="${data.gradient}"></td>
+	                </tr>
+	                </tbody>
+	            </table>
+	        </div>
+	    </div>
+	</div>
+</body>
+</html>
